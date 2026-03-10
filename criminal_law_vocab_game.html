@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criminal Law: Word on the Street</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1008;
+    --paper: #f5f0e8;
+    --aged: #e8dfc8;
+    --red: #c0392b;
+    --gold: #c9a84c;
+    --stamp-green: #2d5a27;
+    --stamp-red: #8b1a1a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2c2416;
+    font-family: 'Special Elite', cursive;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  #header { text-align: center; margin-bottom: 20px; animation: fadeDown 0.6s ease both; }
+  #header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    color: var(--paper);
+    letter-spacing: 0.08em;
+    text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0,0,0,0.3);
+    line-height: 1;
+  }
+  #header .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--gold);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  #scoreboard { display: flex; gap: 16px; margin-bottom: 20px; }
+  .score-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 8px 18px;
+    text-align: center;
+    box-shadow: 3px 3px 0 var(--ink);
+    min-width: 90px;
+  }
+  .score-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: #666; display: block; }
+  .score-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--ink); line-height: 1.1; }
+  #game-area { width: 100%; max-width: 860px; }
+
+  /* MODE SELECT */
+  #mode-select { background: var(--paper); border: 3px solid var(--ink); padding: 30px; box-shadow: 6px 6px 0 var(--ink); text-align: center; }
+  #mode-select h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.05em; color: var(--ink); margin-bottom: 8px; }
+  #mode-select p { color: #555; font-size: 0.9rem; margin-bottom: 24px; }
+  .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .mode-btn {
+    background: var(--ink); color: var(--paper); border: 3px solid var(--ink);
+    padding: 18px 12px; cursor: pointer; font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem; letter-spacing: 0.05em; transition: all 0.15s;
+    box-shadow: 4px 4px 0 var(--gold);
+  }
+  .mode-btn:hover { background: var(--red); transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--gold); }
+  .mode-btn .mode-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+  .mode-btn .mode-desc { font-family: 'Special Elite', cursive; font-size: 0.7rem; font-weight: normal; opacity: 0.8; display: block; }
+
+  /* CASE FILE */
+  .case-file {
+    background: var(--paper); border: 3px solid var(--ink);
+    padding: 28px 32px; box-shadow: 6px 6px 0 var(--ink);
+    margin-bottom: 16px; position: relative; min-height: 200px;
+  }
+  .case-file::before {
+    content: 'CASE FILE'; position: absolute; top: -1px; left: 20px;
+    background: var(--red); color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.25em; padding: 3px 10px; font-weight: 600;
+  }
+  .scenario-card {
+    background: var(--paper); border: 3px solid var(--ink);
+    padding: 28px 32px; box-shadow: 6px 6px 0 var(--ink);
+    margin-bottom: 16px; position: relative;
+  }
+  .scenario-card::before {
+    content: 'INCIDENT REPORT'; position: absolute; top: -1px; left: 20px;
+    background: var(--gold); color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.25em; padding: 3px 10px; font-weight: 600;
+  }
+  .progress-bar-wrap { height: 6px; background: var(--aged); border: 1px solid var(--ink); margin-bottom: 20px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--red); transition: width 0.4s ease; }
+  .q-counter { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-bottom: 12px; }
+  .question-text { font-size: clamp(1rem, 2.5vw, 1.2rem); line-height: 1.6; color: var(--ink); margin-bottom: 24px; }
+  .term-highlight { font-family: 'Bebas Neue', sans-serif; font-size: 1.4em; color: var(--red); letter-spacing: 0.05em; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media(max-width:500px){ .choices { grid-template-columns: 1fr; } }
+  .choice-btn {
+    background: var(--aged); border: 2px solid var(--ink);
+    padding: 14px 16px; text-align: left; cursor: pointer;
+    font-family: 'Special Elite', cursive; font-size: 0.95rem; color: var(--ink);
+    transition: all 0.15s; box-shadow: 3px 3px 0 rgba(0,0,0,0.2); line-height: 1.4;
+  }
+  .choice-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper); transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--gold); }
+  .choice-btn.correct { background: var(--stamp-green) !important; color: #fff !important; border-color: var(--stamp-green) !important; }
+  .choice-btn.wrong { background: var(--stamp-red) !important; color: #fff !important; border-color: var(--stamp-red) !important; }
+  .choice-btn:disabled { cursor: not-allowed; }
+  .feedback-box { margin-top: 14px; padding: 14px 16px; border: 2px solid var(--ink); font-size: 0.95rem; line-height: 1.5; display: none; }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct-fb { background: #e8f5e9; border-color: var(--stamp-green); color: var(--stamp-green); }
+  .feedback-box.wrong-fb { background: #fdecea; border-color: var(--stamp-red); color: var(--stamp-red); }
+
+  /* MATCH */
+  .match-container { background: var(--paper); border: 3px solid var(--ink); padding: 24px; box-shadow: 6px 6px 0 var(--ink); margin-bottom: 16px; }
+  .match-instructions { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: #888; margin-bottom: 20px; text-align: center; }
+  .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+  .match-col-label { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.1em; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 4px; margin-bottom: 8px; text-align: center; }
+  .match-item {
+    background: var(--aged); border: 2px solid var(--ink); padding: 10px 14px;
+    cursor: pointer; font-size: 0.85rem; color: var(--ink); transition: all 0.15s;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15); margin-bottom: 8px;
+    min-height: 50px; display: flex; align-items: center;
+  }
+  .match-item:hover:not(.matched):not(.selected) { background: var(--ink); color: var(--paper); transform: translateX(3px); }
+  .match-item.selected { background: var(--gold); border-color: var(--gold); color: var(--ink); transform: translateX(3px); }
+  .match-item.matched { background: var(--stamp-green); border-color: var(--stamp-green); color: #fff; cursor: default; opacity: 0.85; }
+  .match-item.wrong-match { background: var(--stamp-red); border-color: var(--stamp-red); color: #fff; animation: shake 0.3s ease; }
+  .term-label { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.05em; color: var(--red); }
+  .match-item.matched .term-label { color: #fff; }
+
+  /* NAV */
+  .nav-row { display: flex; gap: 10px; justify-content: space-between; align-items: center; }
+  .nav-btn {
+    background: var(--ink); color: var(--paper); border: 2px solid var(--ink);
+    padding: 10px 24px; cursor: pointer; font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem; letter-spacing: 0.08em; transition: all 0.15s;
+    box-shadow: 3px 3px 0 var(--gold);
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--red); transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--gold); }
+  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  .back-btn {
+    background: transparent; color: var(--paper); border: 2px solid rgba(255,255,255,0.3);
+    padding: 8px 18px; cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    transition: all 0.15s; margin-bottom: 16px; display: inline-block;
+  }
+  .back-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* END */
+  #end-screen {
+    background: var(--paper); border: 3px solid var(--ink);
+    padding: 40px; box-shadow: 8px 8px 0 var(--ink);
+    text-align: center; animation: pop 0.4s ease both;
+  }
+  #end-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 0.05em; color: var(--ink); margin-bottom: 8px; }
+  .verdict-stamp {
+    font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 0.15em;
+    padding: 10px 30px; border: 4px solid; display: inline-block;
+    transform: rotate(-5deg); margin: 16px 0;
+  }
+  .verdict-stamp.acquitted { color: var(--stamp-green); border-color: var(--stamp-green); }
+  .verdict-stamp.hung { color: var(--gold); border-color: var(--gold); }
+  .verdict-stamp.guilty { color: var(--stamp-red); border-color: var(--stamp-red); }
+  .final-score-text { font-size: 1.1rem; color: #444; margin-bottom: 24px; line-height: 1.7; }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pop { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Word on the Street</h1>
+  <div class="subtitle">Chapter 8 · Criminal Law Vocabulary · Three Rounds</div>
+</div>
+
+<div id="scoreboard">
+  <div class="score-card"><span class="score-label">Score</span><span class="score-value" id="score-display">0</span></div>
+  <div class="score-card"><span class="score-label">Streak</span><span class="score-value" id="streak-display">0</span></div>
+  <div class="score-card"><span class="score-label">Round</span><span class="score-value" id="round-display">—</span></div>
+</div>
+
+<div id="game-area">
+
+  <div id="mode-select">
+    <h2>Choose Your Round</h2>
+    <p>Three ways to master criminal law vocabulary. Each round is a different challenge.</p>
+    <div class="mode-grid">
+      <button class="mode-btn" onclick="startFlashcards()">
+        <span class="mode-icon">🔍</span>Round 1<br>Definition Match
+        <span class="mode-desc">See the term — pick the right definition</span>
+      </button>
+      <button class="mode-btn" onclick="startMatchGame()">
+        <span class="mode-icon">⚖️</span>Round 2<br>Line 'Em Up
+        <span class="mode-desc">Tap a term, then tap its definition</span>
+      </button>
+      <button class="mode-btn" onclick="startScenarios()">
+        <span class="mode-icon">📋</span>Round 3<br>Spot the Crime
+        <span class="mode-desc">Read a real scenario — name the concept</span>
+      </button>
+    </div>
+    <p style="font-size:0.8rem;color:#888;">Play in order or jump to any round. Points carry over.</p>
+  </div>
+
+  <div id="flashcard-round" style="display:none;">
+    <button class="back-btn" onclick="goHome()">← Back to Rounds</button>
+    <div class="case-file">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="fc-progress" style="width:0%"></div></div>
+      <div class="q-counter" id="fc-counter">Question 1 of 12</div>
+      <div class="question-text" id="fc-question"></div>
+      <div class="choices" id="fc-choices"></div>
+      <div class="feedback-box" id="fc-feedback"></div>
+    </div>
+    <div class="nav-row">
+      <div id="fc-status" style="color:var(--paper);font-size:0.85rem;"></div>
+      <button class="nav-btn" id="fc-next-btn" onclick="nextFlashcard()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <div id="match-round" style="display:none;">
+    <button class="back-btn" onclick="goHome()">← Back to Rounds</button>
+    <div class="match-container">
+      <div class="match-instructions">Tap a term on the left, then tap its matching definition on the right</div>
+      <div class="match-grid">
+        <div><div class="match-col-label">Terms</div><div id="match-terms"></div></div>
+        <div><div class="match-col-label">Definitions</div><div id="match-defs"></div></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <div id="match-status" style="color:var(--paper);font-size:0.85rem;"></div>
+      <button class="nav-btn" id="match-done-btn" onclick="finishMatch()" disabled>Finish Round →</button>
+    </div>
+  </div>
+
+  <div id="scenario-round" style="display:none;">
+    <button class="back-btn" onclick="goHome()">← Back to Rounds</button>
+    <div class="scenario-card">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="sc-progress" style="width:0%"></div></div>
+      <div class="q-counter" id="sc-counter">Scenario 1 of 8</div>
+      <div class="question-text" id="sc-question"></div>
+      <div class="choices" id="sc-choices"></div>
+      <div class="feedback-box" id="sc-feedback"></div>
+    </div>
+    <div class="nav-row">
+      <div id="sc-status" style="color:var(--paper);font-size:0.85rem;"></div>
+      <button class="nav-btn" id="sc-next-btn" onclick="nextScenario()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <div id="end-screen" style="display:none;">
+    <h2>Court Adjourned</h2>
+    <div class="verdict-stamp" id="verdict-stamp">VERDICT</div>
+    <div class="final-score-text" id="final-score-text"></div>
+    <button class="nav-btn" onclick="resetGame()" style="margin-top:10px;">Play Again</button>
+  </div>
+
+</div>
+
+<script>
+const VOCAB = [
+  { term: "State of Mind", def: "What a person is thinking; whether they acted intentionally, knowingly, or willfully when committing an act." },
+  { term: "Mens Rea", def: "Latin for 'guilty mind' — the mental requirement that a person intended to commit the prohibited act." },
+  { term: "Strict Liability", def: "Legal responsibility even without a guilty mind — the act itself is the crime, regardless of intent." },
+  { term: "Statutory Rape", def: "Unlawful sexual intercourse with someone under the age of consent, regardless of whether the minor seemed willing." },
+  { term: "Felony", def: "A serious crime punishable by imprisonment for more than one year." },
+  { term: "Misdemeanor", def: "A less serious crime punishable by a jail sentence of one year or less." },
+  { term: "Principal", def: "The person who actually commits the crime — for example, the one who pulls the trigger." },
+  { term: "Accomplice", def: "Someone who voluntarily helps the principal commit a crime and is usually present or directly aids in it." },
+  { term: "Accessory Before the Fact", def: "A person who helps plan or encourage a crime but is NOT present when it is committed." },
+  { term: "Accessory After the Fact", def: "A person who, knowing a crime occurred, helps the criminal escape, hide, or avoid capture." },
+  { term: "Crime of Omission", def: "Failing to perform an act required by criminal law when the person was able to do so." },
+  { term: "Inchoate Crimes", def: "Crimes committed in preparation for another crime — such as attempt, solicitation, or conspiracy." },
+  { term: "Solicitation", def: "Asking, commanding, or urging another person to commit a crime — itself a crime even if they refuse." },
+  { term: "Attempt", def: "An effort to commit a crime that goes beyond preparation but does not succeed in completing it." },
+  { term: "Conspiracy", def: "An agreement between two or more people to commit a crime, combined with a substantial act toward doing it." },
+  { term: "Overt Act", def: "An open, observable action taken in furtherance of a conspiracy — required for conviction in many states." },
+  { term: "Motive", def: "The reason a person commits a crime — different from state of mind, which is about intent, not purpose." },
+  { term: "Burglary", def: "Breaking and entering into a building with the intent to commit a felony inside." },
+  { term: "Robbery", def: "Unlawfully taking goods or money from a person using force or intimidation." },
+  { term: "Arson", def: "The intentional burning of another person's property." },
+];
+
+const SCENARIOS = [
+  {
+    text: "Marcus asks his friend Dante to torch a rival's car for $500. Dante says no and walks away. Has Marcus committed a crime?",
+    answer: "Solicitation",
+    choices: ["Solicitation", "Conspiracy", "Attempt", "Crime of Omission"],
+    explain: "Yes — solicitation. Marcus committed the crime the moment he asked, even though Dante refused."
+  },
+  {
+    text: "Nina and Olu agree to rob a jewelry store next week. Olu goes out and buys a ski mask to wear during the robbery. Neither has committed the robbery yet.",
+    answer: "Conspiracy",
+    choices: ["Attempt", "Conspiracy", "Solicitation", "Accessory Before the Fact"],
+    explain: "Conspiracy — they agreed to commit a crime AND Olu took an overt act by purchasing the mask."
+  },
+  {
+    text: "A store owner sells beer to a 17-year-old who showed a fake ID and looked much older. The owner genuinely believed the buyer was an adult. Is the owner guilty?",
+    answer: "Strict Liability",
+    choices: ["Mens Rea", "Strict Liability", "Misdemeanor", "Crime of Omission"],
+    explain: "Yes — strict liability. Intent doesn't matter. Selling alcohol to a minor is illegal regardless of the seller's knowledge."
+  },
+  {
+    text: "Remy drives the getaway car while his partner Tasha goes inside and robs a bank. Remy waits outside the whole time. How is Remy legally classified?",
+    answer: "Accomplice",
+    choices: ["Principal", "Accomplice", "Accessory Before the Fact", "Accessory After the Fact"],
+    explain: "Remy is an accomplice — he directly aided in the crime and was present during its commission."
+  },
+  {
+    text: "After his cousin Harold commits a burglary, Kwame hides Harold in his basement for a week to help him avoid the police. What is Kwame?",
+    answer: "Accessory After the Fact",
+    choices: ["Principal", "Accomplice", "Accessory Before the Fact", "Accessory After the Fact"],
+    explain: "Accessory after the fact — Kwame knew a crime had been committed and helped conceal the criminal."
+  },
+  {
+    text: "A lifeguard on duty watches a child struggling in the water and does absolutely nothing, even though a rescue would have been easy. Is this a crime?",
+    answer: "Crime of Omission",
+    choices: ["Inchoate Crimes", "Strict Liability", "Crime of Omission", "Attempt"],
+    explain: "Yes — a crime of omission. The lifeguard had a legal duty to act and failed to perform it."
+  },
+  {
+    text: "Priya decides to shoot her boss. She buys a gun, loads it, and drives to his office. She is arrested in the parking lot before entering the building. What crime has she committed?",
+    answer: "Attempt",
+    choices: ["Solicitation", "Conspiracy", "Attempt", "Inchoate Crimes"],
+    explain: "Attempted murder — she intended to commit the crime and took a substantial step toward it."
+  },
+  {
+    text: "Robin Hood steals from the rich to give to the poor. His reason for stealing is generosity toward the poor. Does his reason make him innocent?",
+    answer: "Motive",
+    choices: ["Motive", "Mens Rea", "State of Mind", "Strict Liability"],
+    explain: "No — motive is why he did it, but his state of mind (intentional theft) is still guilty. Good motives don't erase criminal intent."
+  },
+];
+
+let score = 0, streak = 0;
+let fcQuestions = [], fcIndex = 0, fcAnswered = false;
+let matchPairs = [], selectedTerm = null, selectedDef = null, matchedCount = 0;
+let scIndex = 0, scAnswered = false;
+
+function updateScoreboard() {
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('streak-display').textContent = streak;
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function hideAll() {
+  ['mode-select','flashcard-round','match-round','scenario-round','end-screen'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+}
+
+function goHome() {
+  hideAll();
+  document.getElementById('mode-select').style.display = 'block';
+  document.getElementById('round-display').textContent = '—';
+}
+
+// ROUND 1
+function startFlashcards() {
+  hideAll();
+  document.getElementById('flashcard-round').style.display = 'block';
+  document.getElementById('round-display').textContent = '1';
+  const pool = shuffle(VOCAB).slice(0, 12);
+  fcQuestions = pool.map(item => {
+    const wrong = shuffle(VOCAB.filter(v => v.term !== item.term)).slice(0, 3).map(v => v.def);
+    return { term: item.term, answer: item.def, choices: shuffle([item.def, ...wrong]) };
+  });
+  fcIndex = 0;
+  renderFlashcard();
+}
+
+function renderFlashcard() {
+  const q = fcQuestions[fcIndex];
+  fcAnswered = false;
+  const pct = (fcIndex / fcQuestions.length) * 100;
+  document.getElementById('fc-progress').style.width = pct + '%';
+  document.getElementById('fc-counter').textContent = `Question ${fcIndex+1} of ${fcQuestions.length}`;
+  document.getElementById('fc-question').innerHTML = `What does <span class="term-highlight">${q.term}</span> mean?`;
+  const cd = document.getElementById('fc-choices');
+  cd.innerHTML = '';
+  q.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c;
+    btn.onclick = () => answerFlashcard(c, q.answer, btn);
+    cd.appendChild(btn);
+  });
+  document.getElementById('fc-feedback').className = 'feedback-box';
+  document.getElementById('fc-feedback').style.display = 'none';
+  document.getElementById('fc-next-btn').disabled = true;
+  document.getElementById('fc-next-btn').textContent = fcIndex < fcQuestions.length - 1 ? 'Next →' : 'Finish Round';
+}
+
+function answerFlashcard(chosen, correct, btn) {
+  if (fcAnswered) return;
+  fcAnswered = true;
+  document.querySelectorAll('#fc-choices .choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correct) b.classList.add('correct');
+  });
+  const fb = document.getElementById('fc-feedback');
+  fb.style.display = 'block';
+  if (chosen === correct) {
+    score += 10; streak++;
+    btn.classList.add('correct');
+    fb.className = 'feedback-box correct-fb show';
+    fb.textContent = `✓ Correct! +10 points.${streak > 1 ? ' 🔥 ' + streak + ' in a row!' : ''}`;
+  } else {
+    streak = 0;
+    btn.classList.add('wrong');
+    fb.className = 'feedback-box wrong-fb show';
+    fb.innerHTML = `✗ Not quite. <strong>${fcQuestions[fcIndex].term}</strong>: "${correct}"`;
+  }
+  updateScoreboard();
+  document.getElementById('fc-next-btn').disabled = false;
+}
+
+function nextFlashcard() {
+  fcIndex++;
+  if (fcIndex >= fcQuestions.length) showEndScreen();
+  else renderFlashcard();
+}
+
+// ROUND 2
+function startMatchGame() {
+  hideAll();
+  document.getElementById('match-round').style.display = 'block';
+  document.getElementById('round-display').textContent = '2';
+  matchPairs = shuffle(VOCAB).slice(0, 8);
+  selectedTerm = null; selectedDef = null; matchedCount = 0;
+  const td = document.getElementById('match-terms');
+  const dd = document.getElementById('match-defs');
+  td.innerHTML = ''; dd.innerHTML = '';
+  shuffle(matchPairs).forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.dataset.id = p.term;
+    el.innerHTML = `<span class="term-label">${p.term}</span>`;
+    el.onclick = () => selectMatch(el, 'term', p.term);
+    td.appendChild(el);
+  });
+  shuffle(matchPairs).forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.dataset.id = p.term;
+    el.textContent = p.def;
+    el.onclick = () => selectMatch(el, 'def', p.term);
+    dd.appendChild(el);
+  });
+  document.getElementById('match-status').textContent = '';
+  document.getElementById('match-done-btn').disabled = true;
+}
+
+function selectMatch(el, type, id) {
+  if (el.classList.contains('matched')) return;
+  if (type === 'term') {
+    document.querySelectorAll('#match-terms .selected').forEach(e => e.classList.remove('selected'));
+    selectedTerm = { el, id };
+    el.classList.add('selected');
+  } else {
+    document.querySelectorAll('#match-defs .selected').forEach(e => e.classList.remove('selected'));
+    selectedDef = { el, id };
+    el.classList.add('selected');
+  }
+  if (selectedTerm && selectedDef) checkMatch();
+}
+
+function checkMatch() {
+  if (selectedTerm.id === selectedDef.id) {
+    [selectedTerm.el, selectedDef.el].forEach(e => { e.classList.remove('selected'); e.classList.add('matched'); });
+    score += 15; streak++; matchedCount++;
+    updateScoreboard();
+    document.getElementById('match-status').textContent = `✓ ${matchedCount} matched!${streak > 1 ? ' 🔥 ' + streak + ' streak' : ''}`;
+    if (matchedCount === matchPairs.length) {
+      document.getElementById('match-done-btn').disabled = false;
+      document.getElementById('match-status').textContent = `🎉 All matched! ${matchPairs.length * 15} points earned this round.`;
+    }
+  } else {
+    [selectedTerm.el, selectedDef.el].forEach(e => { e.classList.remove('selected'); e.classList.add('wrong-match'); });
+    streak = 0; updateScoreboard();
+    setTimeout(() => {
+      [selectedTerm.el, selectedDef.el].forEach(e => e.classList.remove('wrong-match'));
+    }, 400);
+  }
+  selectedTerm = null; selectedDef = null;
+}
+
+function finishMatch() { showEndScreen(); }
+
+// ROUND 3
+function startScenarios() {
+  hideAll();
+  document.getElementById('scenario-round').style.display = 'block';
+  document.getElementById('round-display').textContent = '3';
+  scIndex = 0;
+  renderScenario();
+}
+
+function renderScenario() {
+  const q = SCENARIOS[scIndex];
+  scAnswered = false;
+  document.getElementById('sc-progress').style.width = ((scIndex / SCENARIOS.length) * 100) + '%';
+  document.getElementById('sc-counter').textContent = `Scenario ${scIndex+1} of ${SCENARIOS.length}`;
+  document.getElementById('sc-question').innerHTML = `<em>${q.text}</em><br><br><strong>Which concept best applies?</strong>`;
+  const cd = document.getElementById('sc-choices');
+  cd.innerHTML = '';
+  q.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c;
+    btn.onclick = () => answerScenario(c, q.answer, q.explain, btn);
+    cd.appendChild(btn);
+  });
+  document.getElementById('sc-feedback').className = 'feedback-box';
+  document.getElementById('sc-feedback').style.display = 'none';
+  document.getElementById('sc-next-btn').disabled = true;
+  document.getElementById('sc-next-btn').textContent = scIndex < SCENARIOS.length - 1 ? 'Next →' : 'Finish Round';
+}
+
+function answerScenario(chosen, correct, explain, btn) {
+  if (scAnswered) return;
+  scAnswered = true;
+  document.querySelectorAll('#sc-choices .choice-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correct) b.classList.add('correct');
+  });
+  const fb = document.getElementById('sc-feedback');
+  fb.style.display = 'block';
+  if (chosen === correct) {
+    score += 20; streak++;
+    btn.classList.add('correct');
+    fb.className = 'feedback-box correct-fb show';
+    fb.textContent = `✓ ${explain}`;
+  } else {
+    streak = 0;
+    btn.classList.add('wrong');
+    fb.className = 'feedback-box wrong-fb show';
+    fb.innerHTML = `✗ The answer is <strong>${correct}</strong>. ${explain}`;
+  }
+  updateScoreboard();
+  document.getElementById('sc-next-btn').disabled = false;
+}
+
+function nextScenario() {
+  scIndex++;
+  if (scIndex >= SCENARIOS.length) showEndScreen();
+  else renderScenario();
+}
+
+// END
+function showEndScreen() {
+  hideAll();
+  document.getElementById('end-screen').style.display = 'block';
+  const stamp = document.getElementById('verdict-stamp');
+  const text = document.getElementById('final-score-text');
+  if (score >= 150) {
+    stamp.className = 'verdict-stamp acquitted';
+    stamp.textContent = 'ACQUITTED';
+    text.innerHTML = `Outstanding. Final score: <strong>${score} points.</strong><br>You clearly know your criminal law.`;
+  } else if (score >= 75) {
+    stamp.className = 'verdict-stamp hung';
+    stamp.textContent = 'HUNG JURY';
+    text.innerHTML = `Solid effort. Final score: <strong>${score} points.</strong><br>A few more rounds and you'll have this down.`;
+  } else {
+    stamp.className = 'verdict-stamp guilty';
+    stamp.textContent = 'GUILTY';
+    text.innerHTML = `Final score: <strong>${score} points.</strong><br>The jury recommends more studying. Try again.`;
+  }
+}
+
+function resetGame() {
+  score = 0; streak = 0; updateScoreboard(); goHome();
+}
+</script>
+</body>
+</html>
